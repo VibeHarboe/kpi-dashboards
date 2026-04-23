@@ -1,0 +1,21 @@
+customer_id,customer_name,country,segment,signup_date,plan_type,monthly_revenue,partner_id
+C001,Andersen Regnskab ApS,DK,SMB,2021-03-15,premium,1200,P001
+C002,Berg Consulting AS,NO,SMB,2020-11-01,basic,600,P002
+C003,Carlsson & Co AB,SE,MID,2019-08-20,premium,2400,P003
+C004,Müller Steuerberatung GmbH,DE,SMB,2022-01-10,basic,700,P001
+C005,Van den Berg Advies BV,NL,MID,2021-06-05,premium,1900,P004
+C006,Smith & Partners LLC,US,ENT,2020-04-18,enterprise,5500,P005
+C007,Hansen Bogføring ApS,DK,SMB,2022-07-01,basic,550,P002
+C008,Larsen Revision AS,NO,MID,2021-09-14,premium,1800,P003
+C009,Lindqvist Redovisning AB,SE,SMB,2023-02-28,basic,580,P001
+C010,Weber & Söhne GmbH,DE,ENT,2019-12-01,enterprise,6200,P005
+C011,De Vries Fiscaal BV,NL,SMB,2022-10-15,basic,620,P004
+C012,Johnson Advisory LLC,US,MID,2021-03-30,premium,2100,P002
+C013,Nielsen Økonomi ApS,DK,SMB,2020-08-12,basic,530,P003
+C014,Olsen Regnskap AS,NO,SMB,2023-05-20,premium,1100,P001
+C015,Svensson Redovisning AB,SE,ENT,2018-11-11,enterprise,7800,P005
+C016,Bauer Consulting GmbH,DE,MID,2022-04-02,premium,1650,P004
+C017,Hendriks & Zonen BV,NL,SMB,2021-12-19,basic,590,P002
+C018,Williams Tax LLC,US,SMB,2023-01-08,basic,640,P003
+C019,Christensen Regnskab ApS,DK,MID,2020-06-25,premium,2200,P001
+C020,Bergström Revision AB,SE,MID,2022-08-30,premium,1950,P005
