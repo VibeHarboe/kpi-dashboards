@@ -1,0 +1,84 @@
+name: dbt CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  DBT_PROFILES_DIR: .
+
+jobs:
+  dbt-ci:
+    name: dbt build & test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dbt-snowflake
+        run: |
+          pip install dbt-snowflake==1.8.0
+
+      - name: Install dbt packages
+        run: dbt deps
+
+      - name: Write dbt profiles from secrets
+        run: |
+          cat > profiles.yml << EOF
+          ageras_kpi:
+            target: ci
+            outputs:
+              ci:
+                type: snowflake
+                account: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+                user: ${{ secrets.SNOWFLAKE_USER }}
+                password: ${{ secrets.SNOWFLAKE_PASSWORD }}
+                role: TRANSFORMER
+                database: AGERAS_CI
+                warehouse: COMPUTE_WH
+                schema: dbt_ci_${{ github.run_id }}
+                threads: 4
+          EOF
+
+      - name: dbt debug (connection check)
+        run: dbt debug
+
+      - name: dbt seed (load test data)
+        run: dbt seed --target ci
+
+      - name: dbt build (compile + run + test)
+        run: dbt build --target ci
+
+      - name: dbt docs generate
+        run: dbt docs generate --target ci
+
+      - name: Upload dbt docs as artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dbt-docs-${{ github.run_id }}
+          path: target/
+          retention-days: 7
+
+      - name: Clean up CI schema
+        if: always()
+        run: |
+          dbt run-operation drop_schema --args \
+            "{schema: dbt_ci_${{ github.run_id }}, database: AGERAS_CI}" \
+            --target ci
