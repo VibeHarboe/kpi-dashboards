@@ -56,7 +56,7 @@ ageras_kpi_dbt/
 │
 ├── .github/
 │   └── workflows/
-│       └── dbt_ci.yml         # CI: seed → build → test → docs on every PR
+│       └── dbt_ci.yml         # CI: seed → build → test → docs (manual trigger)
 │
 ├── dbt_project.yml
 ├── packages.yml
@@ -200,12 +200,13 @@ Test coverage includes:
 
 ## CI/CD
 
-Every pull request to `main` triggers the GitHub Actions workflow which:
-1. Installs dbt-snowflake
-2. Runs `dbt seed` with test data
-3. Runs `dbt build` (compile + run + test)
-4. Generates and uploads dbt docs as an artifact
-5. Drops the ephemeral CI schema on teardown
+A GitHub Actions workflow is included and can be triggered manually via `workflow_dispatch`. When run against a live Snowflake environment it will:
+
+1. Install dbt-snowflake
+2. Run `dbt seed` with test data
+3. Run `dbt build` (compile + run + test)
+4. Generate and upload dbt docs as an artifact
+5. Drop the ephemeral CI schema on teardown
 
 Secrets required: `SNOWFLAKE_ACCOUNT`, `SNOWFLAKE_USER`, `SNOWFLAKE_PASSWORD`
 
