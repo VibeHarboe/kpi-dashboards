@@ -1,0 +1,238 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: >
+      Staged customer records sourced from the raw customers seed.
+      Each row represents one unique customer across all six markets
+      (DK, NO, SE, DE, NL, US). Includes derived fields for tenure
+      and region grouping.
+    columns:
+      - name: customer_id
+        description: Primary key — unique identifier for each customer.
+        tests:
+          - unique
+          - not_null
+      - name: customer_name
+        description: Legal trading name of the customer.
+        tests:
+          - not_null
+      - name: country
+        description: ISO 2-letter country code for the customer's market.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['DK', 'NO', 'SE', 'DE', 'NL', 'US']
+      - name: segment
+        description: Customer size segment — SMB, MID, or ENT.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['SMB', 'MID', 'ENT']
+      - name: plan_type
+        description: Subscription plan at signup.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['basic', 'premium', 'enterprise']
+      - name: mrr
+        description: Monthly recurring revenue in local currency units.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              strictly: true
+      - name: partner_id
+        description: Foreign key to the referring partner, if any.
+      - name: tenure_days
+        description: Number of days since the customer signed up.
+      - name: region
+        description: High-level geographic region derived from country.
+
+  - name: stg_subscriptions
+    description: >
+      Staged subscription records. Each row is one subscription lifecycle
+      event, including active subscriptions and historical churn events.
+    columns:
+      - name: subscription_id
+        description: Primary key.
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: Foreign key to stg_customers.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+      - name: plan_type
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['basic', 'premium', 'enterprise']
+      - name: mrr
+        description: MRR at time of subscription.
+        tests:
+          - not_null
+      - name: is_active
+        description: True if subscription has no end or churn date.
+        tests:
+          - not_null
+      - name: is_churned
+        description: True if a churn_date is recorded.
+        tests:
+          - not_null
+      - name: churn_reason
+        description: >
+          Self-reported reason for cancellation. Null for active subs.
+          Valid values: price_too_high, competitor, not_using.
+        tests:
+          - accepted_values:
+              values: ['price_too_high', 'competitor', 'not_using']
+              quote: false
+              where: "churn_reason is not null"
+
+  - name: stg_leads
+    description: >
+      Staged lead / service-request records. One row per inbound lead.
+      Tracks assignment and conversion timestamps used for SLA reporting
+      and supply-demand analysis.
+    columns:
+      - name: lead_id
+        description: Primary key.
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        tests:
+          - not_null
+      - name: country
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['DK', 'NO', 'SE', 'DE', 'NL', 'US']
+      - name: lead_status
+        tests:
+          - accepted_values:
+              values: ['converted', 'pending', 'unassigned', 'lost']
+      - name: is_converted
+        tests:
+          - not_null
+      - name: hours_to_assign
+        description: Hours between lead creation and assignment. Null if unassigned.
+      - name: days_to_convert
+        description: Days between lead creation and conversion. Null if not converted.
+
+  - name: stg_invoices
+    description: >
+      Staged invoice records. Includes computed overdue flags and days_overdue
+      used across the debt collection KPI mart.
+    columns:
+      - name: invoice_id
+        description: Primary key.
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+      - name: amount
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              strictly: true
+      - name: status
+        tests:
+          - accepted_values:
+              values: ['paid', 'overdue', 'paid_late']
+      - name: days_overdue
+        description: Days past due date. 0 for on-time payments.
+      - name: is_currently_overdue
+        description: True if invoice is unpaid past due date today.
+
+  - name: stg_partners
+    description: >
+      Staged partner master data. Each row is one partner organisation
+      with contract terms and commission rates.
+    columns:
+      - name: partner_id
+        description: Primary key.
+        tests:
+          - unique
+          - not_null
+      - name: commission_rate
+        description: Decimal commission applied on MRR from referred customers.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              strictly: false
+      - name: status
+        tests:
+          - accepted_values:
+              values: ['active', 'inactive']
+
+  - name: stg_nps_surveys
+    description: >
+      Staged NPS and CSAT survey responses. Each row is one survey response
+      from one customer. Includes derived NPS category classification.
+    columns:
+      - name: survey_id
+        description: Primary key.
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        tests:
+          - not_null
+      - name: nps_score
+        description: NPS score 0–10.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 10
+      - name: csat_score
+        description: CSAT score 1–5.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              max_value: 5
+      - name: nps_category
+        tests:
+          - accepted_values:
+              values: ['promoter', 'passive', 'detractor']
+
+  - name: stg_upsell_events
+    description: >
+      Staged upsell and add-on events. Each row is one successful upsell
+      action — either a plan upgrade or add-on sale.
+    columns:
+      - name: upsell_id
+        description: Primary key.
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+      - name: upsell_type
+        tests:
+          - accepted_values:
+              values: ['plan_upgrade', 'add_on_sale', 'unknown']
+      - name: incremental_revenue
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              strictly: false
