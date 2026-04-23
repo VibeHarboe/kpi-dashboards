@@ -1,0 +1,6 @@
+partner_id,partner_name,country,partner_type,contract_start_date,monthly_fee,commission_rate,status
+P001,Deloitte DK,DK,accounting_firm,2019-01-01,15000,0.12,active
+P002,PwC NO,NO,accounting_firm,2018-06-01,18000,0.10,active
+P003,KPMG SE,SE,accounting_firm,2020-03-01,14000,0.11,active
+P004,EY NL,NL,accounting_firm,2019-09-01,16500,0.10,active
+P005,BDO US,US,accounting_firm,2017-11-01,22000,0.09,active

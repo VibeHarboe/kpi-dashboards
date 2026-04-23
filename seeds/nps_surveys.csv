@@ -1,0 +1,21 @@
+survey_id,customer_id,survey_date,nps_score,csat_score,country,comment
+SV001,C001,2024-01-15,9,5,DK,Meget tilfreds med servicen
+SV002,C002,2024-01-16,7,4,NO,God service men lidt langsom respons
+SV003,C003,2024-01-18,10,5,SE,Utmärkt service och snabb respons
+SV004,C004,2024-01-20,4,2,DE,Zu langsam und unzuverlässig
+SV005,C005,2024-01-22,8,4,NL,Goede service over het algemeen
+SV006,C006,2024-01-24,9,5,US,Excellent support team
+SV007,C007,2024-02-01,3,2,DK,Ikke tilfreds med prisen
+SV008,C008,2024-02-05,8,4,NO,Bra service totalt sett
+SV009,C009,2024-02-08,6,3,SE,Helt ok men kan förbättras
+SV010,C010,2024-02-10,10,5,DE,Hervorragende Qualität und Service
+SV011,C011,2024-02-14,5,3,NL,Gemiddeld tevreden
+SV012,C012,2024-02-16,9,5,US,Great platform easy to use
+SV013,C013,2024-02-20,2,1,DK,Meget skuffet over serviceniveauet
+SV014,C014,2024-02-22,7,4,NO,Fornøyd med resultatet
+SV015,C015,2024-02-25,10,5,SE,Fantastisk service rekommenderar starkt
+SV016,C016,2024-03-01,8,4,DE,Sehr guter Service
+SV017,C017,2024-03-05,4,2,NL,Teleurgesteld in de kwaliteit
+SV018,C018,2024-03-08,7,3,US,Decent but room for improvement
+SV019,C019,2024-03-10,9,5,DK,Fremragende service og hurtig levering
+SV020,C020,2024-03-12,8,4,SE,Nöjd kund rekommenderar

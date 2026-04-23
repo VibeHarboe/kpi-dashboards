@@ -1,0 +1,21 @@
+subscription_id,customer_id,plan_type,start_date,end_date,churn_date,churn_reason,mrr,country
+S001,C001,premium,2021-03-15,,, ,1200,DK
+S002,C002,basic,2020-11-01,2023-08-31,2023-08-31,price_too_high,600,NO
+S003,C003,premium,2019-08-20,,, ,2400,SE
+S004,C004,basic,2022-01-10,2024-01-31,2024-01-31,competitor,700,DE
+S005,C005,premium,2021-06-05,,, ,1900,NL
+S006,C006,enterprise,2020-04-18,,, ,5500,US
+S007,C007,basic,2022-07-01,2023-12-31,2023-12-31,not_using,550,DK
+S008,C008,premium,2021-09-14,,, ,1800,NO
+S009,C009,basic,2023-02-28,,, ,580,SE
+S010,C010,enterprise,2019-12-01,,, ,6200,DE
+S011,C011,basic,2022-10-15,2024-02-29,2024-02-29,price_too_high,620,NL
+S012,C012,premium,2021-03-30,,, ,2100,US
+S013,C013,basic,2020-08-12,2023-06-30,2023-06-30,competitor,530,DK
+S014,C014,premium,2023-05-20,,, ,1100,NO
+S015,C015,enterprise,2018-11-11,,, ,7800,SE
+S016,C016,premium,2022-04-02,,, ,1650,DE
+S017,C017,basic,2021-12-19,2024-03-31,2024-03-31,not_using,590,NL
+S018,C018,basic,2023-01-08,,, ,640,US
+S019,C019,premium,2020-06-25,,, ,2200,DK
+S020,C020,premium,2022-08-30,,, ,1950,SE
