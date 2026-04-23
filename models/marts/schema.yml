@@ -1,0 +1,143 @@
+version: 2
+
+models:
+  - name: mart_supply_demand
+    description: >
+      Supply & demand KPI mart. Aggregates lead volume, assignment rates,
+      conversion rates, and SLA performance by country, service type, and month.
+      Use the `has_supply_gap` flag to identify markets where unassigned leads
+      exceed 10% of total inbound volume.
+    columns:
+      - name: country
+        description: Market country code.
+        tests:
+          - not_null
+      - name: month
+        description: Calendar month of lead activity.
+        tests:
+          - not_null
+      - name: conversion_rate_pct
+        description: Percentage of leads that converted to customers.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+      - name: sla_breach_rate_pct
+        description: >
+          Percentage of assigned leads that were assigned more than 24 hours
+          after creation — Ageras SLA target is 0% breaches.
+      - name: has_supply_gap
+        description: >
+          True when more than 10% of leads in this segment are unassigned,
+          signalling a need for more supply (accountants/advisors) in the market.
+
+  - name: mart_churn
+    description: >
+      Churn prevention KPI mart. Contains two record types:
+      (1) `monthly_churn_summary` — aggregate churn metrics per month / country / plan.
+      (2) `at_risk_customer` — individual customer-level churn risk scores
+      combining NPS signals and invoice overdue status.
+      Filter on `record_type` to switch between views in your BI tool.
+    columns:
+      - name: record_type
+        description: "'monthly_churn_summary' or 'at_risk_customer'"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['monthly_churn_summary', 'at_risk_customer']
+      - name: churn_rate_pct
+        description: >
+          Monthly churn rate = churned / total subscriptions in period.
+          Ageras target < 2% monthly.
+      - name: churn_risk_level
+        description: >
+          Composite risk tier for active customers: high / medium / low.
+          Derived from NPS category, overdue invoice flag, and tenure.
+
+  - name: mart_upselling
+    description: >
+      Upselling & sales KPI mart. Two record types:
+      (1) `monthly_upsell_performance` — revenue and volume by month / country / rep.
+      (2) `attach_rate_by_segment` — upsell attach rate for eligible basic-plan customers.
+    columns:
+      - name: record_type
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['monthly_upsell_performance', 'attach_rate_by_segment']
+      - name: upsell_attach_rate_pct
+        description: >
+          Percentage of eligible customers (active, basic plan, tenure > 30 days)
+          who have been upsold. Target: > 40%.
+      - name: estimated_upsell_opportunity_mrr
+        description: >
+          Estimated additional MRR if remaining eligible customers upgrade.
+          Calculated as 90% of current eligible MRR base.
+
+  - name: mart_roi_partnerships
+    description: >
+      Partner ROI KPI mart. One row per partner. Calculates net monthly value,
+      ROI percentage, payback period, and cost per acquired customer for each
+      partner organisation. Used to inform partnership renewal decisions.
+    columns:
+      - name: partner_id
+        description: Primary key — partner identifier.
+        tests:
+          - unique
+          - not_null
+      - name: roi_pct
+        description: >
+          Net ROI = (active MRR - total monthly cost) / total monthly cost * 100.
+          Positive ROI = partner generates more than they cost.
+      - name: payback_period_months
+        description: >
+          Estimated months to recoup cumulative partner fees from MRR generated.
+      - name: cost_per_acquired_customer
+        description: >
+          Total fees paid to date divided by number of customers acquired via this partner.
+
+  - name: mart_debt_collection
+    description: >
+      Debt collection KPI mart. Three record types:
+      (1) `monthly_debt_summary` — DSO, overdue rate, recovery rate by country/month.
+      (2) `aging_breakdown` — overdue invoice counts bucketed by 1-30, 31-60, 61-90, 90+ days.
+      (3) `high_risk_debtors` — individual customers with outstanding overdue invoices.
+    columns:
+      - name: record_type
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['monthly_debt_summary', 'aging_breakdown', 'high_risk_debtors']
+      - name: dso_days
+        description: >
+          Days Sales Outstanding — approximation of average collection period.
+          Target: < 15 days.
+      - name: recovery_rate_pct
+        description: >
+          Percentage of overdue invoices that were eventually recovered (paid_late).
+          Target: > 85%.
+
+  - name: mart_customer_satisfaction
+    description: >
+      Customer satisfaction KPI mart. Three record types:
+      (1) `nps_monthly` — NPS score, CSAT %, promoter/passive/detractor breakdown per month.
+      (2) `detractor_detail` — individual detractor customers with MRR at risk.
+      (3) `response_rate` — survey coverage by country.
+      NPS formula: (promoters - detractors) / total * 100.
+    columns:
+      - name: record_type
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['nps_monthly', 'detractor_detail', 'response_rate']
+      - name: nps_score
+        description: >
+          Calculated NPS score ranging from -100 to +100.
+          Ageras target: > 30.
+      - name: csat_pct
+        description: >
+          Percentage of survey respondents who rated satisfaction 4 or 5 out of 5.
+          Target: > 75%.
+      - name: detractor_mrr_at_risk
+        description: >
+          Total MRR held by detractor customers — the revenue most at risk of churn.
